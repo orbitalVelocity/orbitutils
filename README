@@ -1,0 +1,1 @@
+This library is the orbital mechanics module for Orbital Vector. It will eventually be merged into the main repository. Building this module will create a library and several executables for testing the module.
