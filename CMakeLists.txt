@@ -13,3 +13,4 @@ file(GLOB src_files
 add_library(orbitutils	${src_files})
 add_executable(test-kepler	${src_files}	test/test-kepler.cpp)
 add_executable(test-oeconvert	${src_files}	test/test-oeconvert.cpp)
+add_executable(test-lambert	${src_files}	test/test-lambert.cpp)

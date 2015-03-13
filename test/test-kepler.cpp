@@ -43,5 +43,4 @@ int main()
 	calculated = timeUntilAnomaly(grav_param,oe,0.0);
 	error = std::abs(calculated-correct)/correct;
 	fprintf(log, "\tCorrect: %10f  Calculated: %10f  Error Fraction: %10f  (%s)\n",correct,calculated,error,(error < tolerance)?"PASS":"FAIL");
-
 }
