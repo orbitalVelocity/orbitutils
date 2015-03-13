@@ -13,10 +13,10 @@ double timeUntilAnomaly (double grav_param, OrbitalElements oe, double true_anom
 {
 	if(oe.sma > 0.0)
 	{
-		if(true_anomaly < oe.tra) true_anomaly += 2*M_PI;
+		double ecc_anomaly_i = 2.0*atan(sqrt((1.0-oe.ecc)/(1.0+oe.ecc))*tan(oe.tra/2.0));
+		double ecc_anomaly_f = 2.0*atan(sqrt((1.0-oe.ecc)/(1.0+oe.ecc))*tan(true_anomaly/2.0));
 
-		double ecc_anomaly_i = 2*atan(sqrt((1-oe.ecc)/(1+oe.ecc))*tan(oe.tra/2));
-		double ecc_anomaly_f = 2*atan(sqrt((1-oe.ecc)/(1+oe.ecc))*tan(true_anomaly/2));
+		if(ecc_anomaly_f < ecc_anomaly_i) ecc_anomaly_f += 2.0*M_PI;
 
 		double mean_anomaly_i = ecc_anomaly_i-oe.ecc*sin(ecc_anomaly_i);
 		double mean_anomaly_f = ecc_anomaly_f-oe.ecc*sin(ecc_anomaly_f);
@@ -25,8 +25,8 @@ double timeUntilAnomaly (double grav_param, OrbitalElements oe, double true_anom
 	}
 	else
 	{
-		double hyp_anomaly_i = 2*atanh(sqrt((oe.ecc-1)/(1+oe.ecc))*tan(oe.tra/2));
-		double hyp_anomaly_f = 2*atanh(sqrt((oe.ecc-1)/(1+oe.ecc))*tan(true_anomaly/2));
+		double hyp_anomaly_i = 2.0*atanh(sqrt((oe.ecc-1.0)/(1.0+oe.ecc))*tan(oe.tra/2.0));
+		double hyp_anomaly_f = 2.0*atanh(sqrt((oe.ecc-1.0)/(1.0+oe.ecc))*tan(true_anomaly/2.0));
 
 		double mean_anomaly_i = -hyp_anomaly_i+oe.ecc*sinh(hyp_anomaly_i);
 		double mean_anomaly_f = -hyp_anomaly_f+oe.ecc*sinh(hyp_anomaly_f);
@@ -46,34 +46,34 @@ double anomalyAfterTime (double grav_param, OrbitalElements oe, double delta_tim
 {
 	if(oe.sma > 0.0)
 	{
-		double ecc_anomaly_i = 2*atan(sqrt((1-oe.ecc)/(1+oe.ecc))*tan(oe.tra/2));
+		double ecc_anomaly_i = 2.0*atan(sqrt((1.0-oe.ecc)/(1.0+oe.ecc))*tan(oe.tra/2.0));
 		double mean_anomaly_f = ecc_anomaly_i-oe.ecc*sin(ecc_anomaly_i)+sqrt(grav_param/pow(oe.sma,3.0))*delta_time;
 
 		// perform Newton-Raphson iteration to determine the final eccentric anomaly
 		double ecc_anomaly_f = mean_anomaly_f;
 		double error = mean_anomaly_f-ecc_anomaly_f+oe.ecc*sin(ecc_anomaly_f);
-		while (error > 1E-10)
+		while (std::abs(error) > 1E-10)
 		{
-			ecc_anomaly_f = ecc_anomaly_f-error/(oe.ecc*cos(ecc_anomaly_f)-1);
+			ecc_anomaly_f = ecc_anomaly_f-error/(oe.ecc*cos(ecc_anomaly_f)-1.0);
 			error = mean_anomaly_f-ecc_anomaly_f+oe.ecc*sin(ecc_anomaly_f);
 		}
 
-		return 2*atan(sqrt((1+oe.ecc)/(1-oe.ecc))*tan(ecc_anomaly_f/2));
+		return 2.0*atan(sqrt((1.0+oe.ecc)/(1.0-oe.ecc))*tan(ecc_anomaly_f/2.0));
 	}
 	else
 	{
-		double hyp_anomaly_i = 2*atanh(sqrt((oe.ecc-1)/(1+oe.ecc))*tan(oe.tra/2));    
+		double hyp_anomaly_i = 2.0*atanh(sqrt((oe.ecc-1.0)/(1.0+oe.ecc))*tan(oe.tra/2.0));
 		double mean_anomaly_f = -hyp_anomaly_i+oe.ecc*sinh(hyp_anomaly_i)+sqrt(grav_param/pow(-oe.sma,3.0))*delta_time;
 
 		// perform Newton-Raphson iteration to determine the final eccentric anomaly
 		double hyp_anomaly_f = mean_anomaly_f;
 		double error = mean_anomaly_f+hyp_anomaly_f-oe.ecc*sinh(hyp_anomaly_f);
-		while (error > 1E-10)
+		while (std::abs(error) > 1E-10)
 		{
 			hyp_anomaly_f = hyp_anomaly_f-error/(oe.ecc*cosh(hyp_anomaly_f)-1);
 			error = mean_anomaly_f+hyp_anomaly_f-oe.ecc*sinh(hyp_anomaly_f);
 		}
 
-		return 2*atan(sqrt((1+oe.ecc)/(oe.ecc-1))*tanh(hyp_anomaly_f/2));
+		return 2.0*atan(sqrt((1.0+oe.ecc)/(oe.ecc-1.0))*tanh(hyp_anomaly_f/2.0));
 	}
 }

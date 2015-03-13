@@ -43,4 +43,38 @@ int main()
 	calculated = timeUntilAnomaly(grav_param,oe,0.0);
 	error = std::abs(calculated-correct)/correct;
 	fprintf(log, "\tCorrect: %10f  Calculated: %10f  Error Fraction: %10f  (%s)\n",correct,calculated,error,(error < tolerance)?"PASS":"FAIL");
+
+	fprintf(log,"Test timeUntilAnomaly, elliptical, f = 0 to f = 2*pi:\n");
+	oe.ecc = 0.5;
+	oe.tra = 0.0;
+	correct = period;
+	calculated = timeUntilAnomaly(grav_param,oe,2.0*M_PI);
+	error = std::abs(calculated-correct)/correct;
+	fprintf(log, "\tCorrect: %10f  Calculated: %10f  Error Fraction: %10f  (%s)\n",correct,calculated,error,(error < tolerance)?"PASS":"FAIL");
+
+	fprintf(log,"Test anomalyAfterTime, elliptical, dt = P/2:\n");
+	oe.ecc = 0.5;
+	oe.tra = 0.0;
+	correct = M_PI;
+	calculated = anomalyAfterTime(grav_param,oe,period/2.0);
+	error = std::abs(calculated-correct)/correct;
+	fprintf(log, "\tCorrect: %10f  Calculated: %10f  Error Fraction: %10f  (%s)\n",correct,calculated,error,(error < tolerance)?"PASS":"FAIL");
+
+	fprintf(log,"Test both as inverses of each other, elliptical, dt = P/4:\n");
+	oe.ecc = 0.5;
+	oe.tra = 0.0;
+	correct = period/4.0;
+	double anomaly = anomalyAfterTime(grav_param,oe,correct);
+	calculated = timeUntilAnomaly(grav_param,oe,anomaly);
+	error = std::abs(calculated-correct)/correct;
+	fprintf(log, "\tCorrect: %10f  Calculated: %10f  Error Fraction: %10f  (%s)\n",correct,calculated,error,(error < tolerance)?"PASS":"FAIL");
+
+	fprintf(log,"Test both as inverses of each other, elliptical, f = 0 to f = pi/2:\n");
+	oe.ecc = 0.5;
+	oe.tra = 0.0;
+	correct = M_PI/2;
+	double time = timeUntilAnomaly(grav_param,oe,correct);
+	calculated = anomalyAfterTime(grav_param,oe,time);
+	error = std::abs(calculated-correct)/correct;
+	fprintf(log, "\tCorrect: %10f  Calculated: %10f  Error Fraction: %10f  (%s)\n",correct,calculated,error,(error < tolerance)?"PASS":"FAIL");
 }

@@ -10,18 +10,24 @@ std::vector<double> boundingVelocities(double grav_param, std::vector<double> r0
 	const double TOLERANCE = 1E-10;
 
 	// switch to canonical units
-	// TODO
+	double scale = 1.0/pow(grav_param,1.0/3.0);
+	r0[0] = r0[0]*scale;
+	r0[1] = r0[1]*scale;
+	r0[2] = r0[2]*scale;
+	rf[0] = rf[0]*scale;
+	rf[1] = rf[1]*scale;
+	rf[2] = rf[2]*scale;
 
 	// problem constants
 	double r0_norm = sqrt(r0[0]*r0[0] + r0[1]*r0[1] + r0[2]*r0[2]);
 	double rf_norm = sqrt(rf[0]*rf[0] + rf[1]*rf[1] + rf[2]*rf[2]);
 	double df = acos((r0[0]*rf[0] + r0[1]*rf[1] + r0[2]*rf[2])/(r0_norm*rf_norm));
-	if(long_way == 1) df = 2.0*M_PI - df;
+	if(long_way) df = 2.0*M_PI - df;
 	double k = r0_norm*rf_norm*(1.0-cos(df));
 	double l = r0_norm + rf_norm;
 	double m = r0_norm*rf_norm*(1.0+cos(df));
-	double p_i = k/(1.0+sqrt(2.0*m));
-	double p_ii = k/(1.0-sqrt(2.0*m));
+	double p_i = k/(l+sqrt(2.0*m));
+	double p_ii = k/(l-sqrt(2.0*m));
 
 	// initial estimate
 	double p = (p_i + p_ii)/2.0;
@@ -34,10 +40,10 @@ std::vector<double> boundingVelocities(double grav_param, std::vector<double> r0
 	{
 		double t, dtdp;
 		// deal with negative values of p
-		if(p < 0.0) p = ((MAXITER-i)*p_i+i*p_ii)/MAXITER;
+		if(p < 0.0) p = ((MAXITER-i-1)*p_i+(i+1)*p_ii)/(MAXITER+2);
 		// deal with out-of-bounds p
-		if(!long_way && p < p_i) p = (i*p_i+(MAXITER-i)*p_ii)/MAXITER;
-		if(long_way && p > p_ii) p = p = (i*p_i+(MAXITER-i)*p_ii)/MAXITER;
+		if(!long_way && p < p_i) p = ((i+1)*p_i+(MAXITER-i-1)*p_ii)/(MAXITER+2);
+		if(long_way && p > p_ii) p = ((i+1)*p_i+(MAXITER-i-1)*p_ii)/(MAXITER+2);
 		// compute the semi-major axis using the new p
 		double a = m*k*p/((2*m-l*l)*p*p + 2*k*l*p-k*k);
 		// compute the values of the f and g functions
@@ -63,7 +69,7 @@ std::vector<double> boundingVelocities(double grav_param, std::vector<double> r0
 			dtdp = -g/(2*p)-3/2*a*(t-g)*((k*k+(2*m-l*l)*p*p)/(m*k*p*p))-sqrt(-a*a*a)*(2*k*sinh(F))/(p*(k-l*p));
 		}
 		// iterate
-		p = p + (dt-t)/dtdp;
+		p = p - (dt-t)/dtdp;
 		if(std::abs(dt-t) < TOLERANCE) break;
 	}
 
@@ -75,5 +81,14 @@ std::vector<double> boundingVelocities(double grav_param, std::vector<double> r0
 	v[3] = fdot*r0[0]+gdot*v[0];
 	v[4] = fdot*r0[1]+gdot*v[1];
 	v[5] = fdot*r0[2]+gdot*v[2];
+
+	// return from canonical units
+	v[0] = v[0]/scale;
+	v[1] = v[1]/scale;
+	v[2] = v[2]/scale;
+	v[3] = v[3]/scale;
+	v[4] = v[4]/scale;
+	v[5] = v[5]/scale;
+
 	return v;
 }
